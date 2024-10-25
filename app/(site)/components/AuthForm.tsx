@@ -6,6 +6,8 @@ import Input from '@/app/components/inputs/Input';
 import Button from '@/app/components/Button';
 import AuthSocialButton from './AuthSocialButton';
 import { BsGithub, BsGoogle } from 'react-icons/bs';
+import { motion, AnimatePresence } from 'framer-motion';
+import { slideIn, slideInFromTop } from '@/app/utils/motion';
 
 type Variant = 'LOGIN' | 'REGISTER';
 
@@ -50,18 +52,33 @@ const AuthForm = () => {
   };
 
   return (
-    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <motion.div
+      variants={slideInFromTop}
+      initial="hidden"
+      animate="visible"
+      className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
+    >
       <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 dark:bg-gray-800">
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {variant === 'REGISTER' && (
-            <Input
-              id="name"
-              label="Name"
-              register={register}
-              errors={errors}
-              disabled={isLoading}
-            />
-          )}
+          <AnimatePresence>
+            {variant === 'REGISTER' && (
+              <motion.div
+                variants={slideInFromTop}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                transition={{ duration: 0.5 }}
+              >
+                <Input
+                  id="name"
+                  label="Name"
+                  register={register}
+                  errors={errors}
+                  disabled={isLoading}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Input
             id="email"
@@ -100,14 +117,32 @@ const AuthForm = () => {
           </div>
 
           <div className="mt-6 flex gap-2">
-            <AuthSocialButton
-              icon={BsGithub}
-              onClick={() => socialAction('github')}
-            />
-            <AuthSocialButton
-              icon={BsGoogle}
-              onClick={() => socialAction('google')}
-            />
+            <motion.div
+              variants={slideIn(-40, 1)}
+              initial="hidden"
+              animate="visible"
+              className="w-full"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 1 }}
+            >
+              <AuthSocialButton
+                icon={BsGithub}
+                onClick={() => socialAction('github')}
+              />
+            </motion.div>
+            <motion.div
+              variants={slideIn(40, 1)}
+              initial="hidden"
+              animate="visible"
+              className="w-full"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 1 }}
+            >
+              <AuthSocialButton
+                icon={BsGoogle}
+                onClick={() => socialAction('google')}
+              />
+            </motion.div>
           </div>
         </div>
 
@@ -115,12 +150,15 @@ const AuthForm = () => {
           <div>
             {variant === 'LOGIN' ? 'New to Smsxx?' : 'Already have an account?'}
           </div>
-          <div onClick={toggleVariant} className="underline cursor-pointer">
+          <div
+            onClick={toggleVariant}
+            className="hover:scale-105 active:scale-100 transition cursor-pointer underline font-bold text-black dark:text-white"
+          >
             {variant === 'LOGIN' ? 'Create an account' : 'Login'}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
