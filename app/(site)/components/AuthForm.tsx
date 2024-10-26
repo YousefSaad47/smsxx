@@ -2,8 +2,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { useForm, FieldValues, SubmitHandler } from 'react-hook-form';
-import Input from '@/app/components/inputs/Input';
-import Button from '@/app/components/Button';
+import Input from '@/app/ui/inputs/Input';
+import Button from '@/app/ui/Button';
 import AuthSocialButton from './AuthSocialButton';
 import { BsGithub, BsGoogle } from 'react-icons/bs';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -118,7 +118,7 @@ const AuthForm = () => {
 
           <div className="mt-6 flex gap-2">
             <motion.div
-              variants={slideIn(-40, 1)}
+              variants={slideIn(-40, 0.5)}
               initial="hidden"
               animate="visible"
               className="w-full"
@@ -131,7 +131,7 @@ const AuthForm = () => {
               />
             </motion.div>
             <motion.div
-              variants={slideIn(40, 1)}
+              variants={slideIn(40, 0.5)}
               initial="hidden"
               animate="visible"
               className="w-full"

@@ -26,8 +26,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/components/DarkModeToggle.jsx",
-    "app/components/ThemeToggle.jsx"
+    "app/ui/DarkModeToggle.jsx",
+    "app/ui/ThemeToggle.jsx"
   ],
   "exclude": ["node_modules"]
 }

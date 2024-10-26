@@ -82,3 +82,35 @@ export const slideInFromTop = {
     },
   },
 };
+
+export const bounceVariant = {
+  initial: {
+    scale: 0.1,
+    y: -150,
+    opacity: 0,
+    rotateY: 180,
+  },
+  animate: {
+    scale: 1,
+    y: 0,
+    opacity: 1,
+    rotateY: 0,
+    transition: {
+      duration: 1.8,
+      ease: [0.19, 1, 0.22, 1],
+      opacity: { duration: 0.5 },
+      rotateY: { duration: 1.2 },
+    },
+  },
+};
+
+export const floatVariant = {
+  animate: {
+    y: [-2, 2, -2],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
