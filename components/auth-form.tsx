@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import axios from 'axios';
+import { signIn } from 'next-auth/react';
 import { Input } from '@heroui/input';
 import { Form } from '@heroui/form';
 import { Button } from '@heroui/button';
@@ -9,12 +11,21 @@ import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import OAuthButtons from './oauth-buttons';
 import Logo from './logo';
 import { BsGithub, BsGoogle } from 'react-icons/bs';
+import { TbLoader2 } from 'react-icons/tb';
+import { cn } from '@/lib/utils';
 
 type Variant = 'SIGNIN' | 'SIGNUP';
+
+type Status = {
+  type: 'error' | 'success';
+  message: string;
+} | null;
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>('SIGNUP');
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<Status>(null);
 
   const toggleVariant = useCallback(() => {
     setVariant((prevVariant) =>
@@ -26,10 +37,38 @@ const AuthForm = () => {
     setIsVisible((prev) => !prev);
   }, []);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+    setStatus(null);
 
     const data = Object.fromEntries(new FormData(e.currentTarget));
+
+    try {
+      if (variant === 'SIGNUP') {
+        await axios.post('/api/sign-up', data);
+        setStatus({ type: 'success', message: 'Account created successfully' });
+      } else {
+        const callback = await signIn('credentials', {
+          ...data,
+          redirect: false,
+        });
+        if (callback?.error) {
+          setStatus({ type: 'error', message: 'Invalid email or password' });
+        } else {
+          setStatus({ type: 'success', message: 'Signed in successfully' });
+        }
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setStatus({
+          type: 'error',
+          message: err.response?.data?.error || 'An unexpected error occurred',
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const socialAction = (action: string) => {
@@ -41,7 +80,9 @@ const AuthForm = () => {
       <div className="mt-20">
         <Logo />
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
-          Sign in to your account
+          {variant === 'SIGNIN'
+            ? 'Sign in to your account'
+            : 'Create an account'}
         </h2>
       </div>
 
@@ -88,7 +129,11 @@ const AuthForm = () => {
             errorMessage="Password must be at least 8 characters"
             className="mb-4"
             endContent={
-              <button type="button" onClick={toggleVisibility}>
+              <button
+                type="button"
+                onClick={toggleVisibility}
+                aria-label={isVisible ? 'Hide password' : 'Show password'}
+              >
                 {isVisible ? (
                   <AiFillEyeInvisible className="pointer-events-none text-2xl text-default-400" />
                 ) : (
@@ -97,8 +142,14 @@ const AuthForm = () => {
               </button>
             }
           />
-          <Button type="submit" color="primary" radius="full" fullWidth>
-            {variant === 'SIGNIN' ? 'Sign in' : 'Create an account'}
+          <Button
+            type="submit"
+            color="primary"
+            disabled={isLoading}
+            radius="full"
+            fullWidth
+          >
+            {isLoading ? <TbLoader2 className="animate-spin" /> : 'Continue'}
           </Button>
         </Form>
         <div className="flex flex-col items-center w-[400px] md:w-[430px] space-y-6">
@@ -126,17 +177,35 @@ const AuthForm = () => {
             {variant === 'SIGNIN' ? (
               <span
                 className="cursor-pointer font-semibold hover:underline"
-                onClick={toggleVariant}
+                onClick={() => {
+                  toggleVariant();
+                  setStatus(null);
+                }}
               >
-                Sign up
+                Create an account
               </span>
             ) : (
               <span
                 className="cursor-pointer font-semibold hover:underline"
-                onClick={toggleVariant}
+                onClick={() => {
+                  toggleVariant();
+                  setStatus(null);
+                }}
               >
-                Create an account
+                Sign in
               </span>
+            )}
+          </div>
+          <div>
+            {status && (
+              <p
+                className={cn(
+                  'text-center text-sm',
+                  status.type === 'error' ? 'text-red-500' : 'text-green-500'
+                )}
+              >
+                {status.message}
+              </p>
             )}
           </div>
         </div>
