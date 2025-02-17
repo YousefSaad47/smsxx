@@ -21,10 +21,12 @@ type Status = {
   message: string;
 } | null;
 
+type AuthLoadingState = 'credentials' | 'google' | 'github' | null;
+
 const AuthForm = () => {
-  const [variant, setVariant] = useState<Variant>('SIGNUP');
+  const [variant, setVariant] = useState<Variant>('SIGNIN');
   const [isVisible, setIsVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<AuthLoadingState>(null);
   const [status, setStatus] = useState<Status>(null);
 
   const toggleVariant = useCallback(() => {
@@ -39,7 +41,7 @@ const AuthForm = () => {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoading('credentials');
     setStatus(null);
 
     const data = Object.fromEntries(new FormData(e.currentTarget));
@@ -67,12 +69,19 @@ const AuthForm = () => {
         });
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   };
 
-  const socialAction = (action: string) => {
-    // TODO: NEXTAUTH SIGN IN
+  const socialAction = async (action: 'google' | 'github') => {
+    setIsLoading(action);
+    try {
+      await signIn(action, { redirect: false });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(null);
+    }
   };
 
   return (
@@ -145,11 +154,15 @@ const AuthForm = () => {
           <Button
             type="submit"
             color="primary"
-            disabled={isLoading}
+            disabled={isLoading === 'credentials'}
             radius="full"
             fullWidth
           >
-            {isLoading ? <TbLoader2 className="animate-spin" /> : 'Continue'}
+            {isLoading === 'credentials' ? (
+              <TbLoader2 className="animate-spin" />
+            ) : (
+              'Continue'
+            )}
           </Button>
         </Form>
         <div className="flex flex-col items-center w-[400px] md:w-[430px] space-y-6">
@@ -162,10 +175,14 @@ const AuthForm = () => {
             <OAuthButtons
               onClick={() => socialAction('google')}
               icon={BsGoogle}
+              isLoading={isLoading === 'google'}
+              disabled={isLoading === 'google'}
             />
             <OAuthButtons
               onClick={() => socialAction('github')}
               icon={BsGithub}
+              isLoading={isLoading === 'github'}
+              disabled={isLoading === 'github'}
             />
           </div>
           <div className="flex gap-2">
